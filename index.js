@@ -4,8 +4,8 @@ const Table = require("cli-table3");
 const colors = require("colors");
 const get = require("lodash.get");
 
-const desc = (a, b) => a.price - b.price;
-const asc = (a, b) => b.price - a.price;
+const desc = (a, b) => a.usd_price - b.usd_price;
+const asc = (a, b) => b.usd_price - a.usd_price;
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 const formatter = new Intl.NumberFormat("en-US", {
