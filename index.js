@@ -14,6 +14,7 @@ const formatter = new Intl.NumberFormat("en-US", {
 });
 
 const formatCash = (val) => formatter.format(val);
+const formatNumber = (val) =>  formatCash(val).split('$')[1];
 
 if (process.argv.length < 3) {
   console.warn("please enter your openseas account address");
@@ -52,18 +53,20 @@ const getAssetInfo = async (id) => {
 
   const { name, orders, last_sale } = data;
   const cleanOrders = orders.map(
-    ({ maker, payment_token_contract, current_price, side }) => {
+    ({ maker, payment_token_contract, current_price, side, quantity:quantityString }) => {
+      const quantity = parseInt(quantityString)
       const { symbol, usd_price } = payment_token_contract;
       const price =
         symbol === "USDC"
           ? current_price / 1000000
           : current_price / 1000000000000000000;
+      const usdPrice = Math.round(parseFloat(usd_price) * price * 100) / 100;
 
       return {
         username: (maker.user && maker.user.username) || maker.address,
         symbol,
-        price,
-        usd_price: Math.round(parseFloat(usd_price) * price * 100) / 100,
+        price: price/quantity,
+        usd_price: usdPrice/quantity,
         side,
       };
     }
@@ -124,7 +127,7 @@ const PRICES_DIRECTION = "right";
       name.yellow,
       {
         content: topOffer
-          ? `${topOffer.price} ${topOffer.symbol} (${formatCash(
+          ? `${formatNumber(topOffer.price)} ${topOffer.symbol} (${formatCash(
               get(topOffer, "usd_price", 0)
             )})`
           : "",
@@ -132,7 +135,7 @@ const PRICES_DIRECTION = "right";
       },
       {
         content: cheapestListing
-          ? `${cheapestListing.price} ${cheapestListing.symbol} (${formatCash(
+          ? `${formatNumber(cheapestListing.price)} ${cheapestListing.symbol} (${formatCash(
               get(cheapestListing, "usd_price", 0)
             )})`
           : "",
@@ -140,7 +143,7 @@ const PRICES_DIRECTION = "right";
       },
       {
         content: lastSale
-          ? `${lastSale.price} ${lastSale.symbol} (${formatCash(
+          ? `${formatNumber(lastSale.price)} ${lastSale.symbol} (${formatCash(
               get(lastSale, "lastUsdPrice", 0)
             )})`
           : "",
